@@ -46,13 +46,16 @@ def account_refresher():
         if tokens[i]["time"] <= time.time():
             tokens[i] = login(tokens[i]["email"], tokens[i]["passwd"], tokens[i]["name"])
 
-def claimer(acc):
+def claimer(acc, proxy):
     global tokens
     global drop
     while True:
         if drop:
             if tokens[acc]["username"] != None:
-                res = requests.get(f"https://api.minecraftservices.com/minecraft/profile/name/{tokens[acc]["name"]}", headers={"Authorization": f"Bearer {tokens[acc]["access_token"]}"})
+                res = requests.get(f"https://api.minecraftservices.com/minecraft/profile/name/{tokens[acc]["name"]}", headers={"Authorization": f"Bearer {tokens[acc]["access_token"]}"}, proxies={
+                    'http': proxy,
+                    'https': proxy,
+                })
                 if res.status_code == 200:
                     print(f"Claimed {tokens[acc]["name"]}!")
                     break
@@ -60,7 +63,10 @@ def claimer(acc):
                     print(f"Couldn't claim {tokens[acc]["name"]}!")
                     break
             else:
-                res = requests.post("https://api.minecraftservices.com/minecraft/profile", json={"profileName": tokens[acc]["name"]}, headers={"Authorization": f"Bearer {tokens[acc]["access_token"]}", "Accept": "application/json"})
+                res = requests.post("https://api.minecraftservices.com/minecraft/profile", json={"profileName": tokens[acc]["name"]}, headers={"Authorization": f"Bearer {tokens[acc]["access_token"]}", "Accept": "application/json"}, proxies={
+                    'http': proxy,
+                    'https': proxy,
+                })
                 if res.status_code == 200:
                     print(f"Claimed {tokens[acc]["name"]}!")
                     break
@@ -69,13 +75,15 @@ def claimer(acc):
                     break
 
 def main():
+    global tokens
+    global proxies
     name = input("Name that will be deleted: ")
     threads = int(input("Amount of threads to check(2-4x Amount of proxies, lower if you hit ratelimits): "))
     threading.Thread(target=account_refresher).start()
     for i in range(threads):
         threading.Thread(target=check, args=(name, proxies[len(proxies) % (i + 1) % len(proxies)])).start()
-    for i in tokens:
-        threading.Thread(target=claimer, args=(i,)).start()
+    for i in range(len(tokens)):
+        threading.Thread(target=claimer, args=(tokens[i], proxies[i])).start()
     while True:
         continue
 
