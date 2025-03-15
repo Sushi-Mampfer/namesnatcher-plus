@@ -52,7 +52,7 @@ def claimer(acc, proxy):
     while True:
         if drop:
             if tokens[acc]["username"] != None:
-                res = requests.get(f"https://api.minecraftservices.com/minecraft/profile/name/{tokens[acc]["name"]}", headers={"Authorization": f"Bearer {tokens[acc]["access_token"]}"}, proxies={
+                res = requests.put(f"https://api.minecraftservices.com/minecraft/profile/name/{tokens[acc]["name"]}", headers={"Authorization": f"Bearer {tokens[acc]["access_token"]}"}, proxies={
                     'http': proxy,
                     'https': proxy,
                 })
